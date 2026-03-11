@@ -1,5 +1,8 @@
 <script setup>
 import { ref } from 'vue'
+import {useRouter} from "vue-router";
+
+const router = useRouter();
 
   const rules = {
     required: value => !!value || 'Required.',
@@ -10,6 +13,20 @@ import { ref } from 'vue'
   const show1 = ref(false)
   const show2 = ref(true)
   const password = ref(null)
+  const username = ref(null)
+
+function login(){
+    const userDetails = JSON.parse(localStorage.getItem('userDetails'))
+    if (username.value == userDetails.email && password.value == userDetails.password){
+        //proceed to homepage
+        router.push('/homepage')
+        localStorage.setItem( "isLoggedIn", true );
+
+    }else{
+        console.log('Invalid credentials. Try again')
+    }
+}
+
 </script>
 
 <template>
@@ -18,26 +35,25 @@ import { ref } from 'vue'
             <v-col md="12">
                 <v-form width="50%">
                     <v-row>
-                        <v-col md="12">
-                            <v-icon color="#3A4B68" icon="mdi-weight-lifter" size="x-large"></v-icon>
-                        </v-col>
+                        <v-container align="center">
+                        </v-container>
                     </v-row>
                     <v-row>
                         <v-col>
-                            <div class="text-display-small font-weight-medium">Welcome to MacFit Gym</div>
+                            <div class="text-title-large font-weight-medium">Welcome to MacFit Gym</div>
                         </v-col>
                     </v-row>
                     <v-row>
-                        <v-col md="6">
-                            <div class="text-title-large font-weight-medium text-right">Username</div>
+                        <v-col md="4">
+                            <div class="text-body-large font-weight-medium text-right">Username</div>
                         </v-col>
                         <v-col md="6">
-                            <v-text-field variant="outlined"></v-text-field>
+                            <v-text-field variant="outlined" v-model="username"></v-text-field>
                         </v-col>
                     </v-row>
                     <v-row>
-                        <v-col md="6">
-                            <div class="text-title-large font-weight-medium text-right">Password</div>
+                        <v-col md="4">
+                            <div class="text-body-large font-weight-medium text-right">Password</div>
                         </v-col>
                         <v-col md="6">
                             <v-text-field 
@@ -52,12 +68,14 @@ import { ref } from 'vue'
                     </v-row>
                     <v-row>
                         <v-col md="12">
-                            <v-btn color="#3A4B68" variant="elevated">Log in</v-btn>
+                            <v-btn color="#3A4B68" variant="elevated" @click="login">Log in</v-btn>
                         </v-col>
                     </v-row>
                     <v-row>
                         <v-col md="12">
-                            <div> New to MacFit Gym? Create an account</div>
+                            <div> New to MacFit Gym? 
+                                <router-link to="/signup"> Create an account</router-link>
+                            </div>
                         </v-col>
                     </v-row>
                 </v-form>
