@@ -21,7 +21,15 @@ const vuetify = createVuetify({
     defaultSet: 'mdi', // This is already the default value - only for display purposes
   },
   theme: {
-    defaultTheme: 'light'
+    defaultTheme: 'light',
+    themes: {
+      light: {
+        colors: {
+          primary: "#3A4B68", 
+          secondary: "#CFD0D6" 
+        }
+      },
+    },
   },
 })
 
