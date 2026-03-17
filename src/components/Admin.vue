@@ -70,46 +70,61 @@ async function addUser(){
       throw err
    } 
 }
-function editUser(data){
-    fullName.value = data.name 
-    userRole.value = data.role_id
-    email.value = data.email
-    phoneNumber.value = data.phoneNumber
-    dob.value = data.dob
-    gymLocation.value = data.gymLocation
-    gender.value = data.gender
-    showEditUser.value = true
+
+//roles
+const roles = ref(null)
+
+//equipment
+const equipment = ref(null)
+const equipmentName = ref(null)
+const usage = ref(null)
+const modelNo = ref(null)
+const equipmentValue = ref(null)
+const status = ref(null)
+
+async function fetchEquipment(){
+
+    try {
+        await api.get('getEquipments', { headers: { 'Authorization': `Bearer ${token}` } })
+        .then(function (response) {
+            if(response.data){
+                equipment.value = response.data
+            }
+        })
+    } catch (err) {
+        error.value = err.response?.data?.message || 'Retrieving data failed'
+        throw err
+    } 
 }
-async function updateUser(){
-   const formData = new FormData()
-   formData.append('username', username.value)
-   formData.append('userRole', userRole.value)
-   formData.append('email', email.value)
-   formData.append('phone', phone.value)
+//add equipment
+async function addEquipment(){
+    const formData = new FormData()
+    formData.append("name", equipmentName.value,);
+    formData.append("usage", usage.value);
+    formData.append("model_no", modelNo.value);
+    formData.append("value", equipmentValue.value);
+    formData.append("status", status.value);
 
    try {
-      await api.put('users/' + userIdNo.value, formData,
+      await api.post('saveEquipment', formData,
          { headers: { 'Authorization': `Bearer ${token}` } })
          .then(function (response) {
             error.value = ''
             loading.value = false
             close()
-            fetchUsers();
+            fetchEquipment();
         })
    } catch (err) {
-      error.value = err.response?.data?.message || 'Creating screening data failed'
+      error.value = err.response?.data?.message || 'Creating user failed'
       throw err
    } 
 }
-//roles
-const roles = ref(null)
-//equipment
-const equipment = ref(null)
 
 //clear reactive model values
 function close(){
     showAddUserDialog.value = false
     showEditUserDialog.value = false
+    showAddEquipmentDialog.value = false
     fullName.value = null
     firstName.value = null
     lastName.value = null
@@ -119,10 +134,20 @@ function close(){
     gender.value = null
     gymLocation.value = null
     userRole.value=null
+
+    //equipment
+    equipmentName.value = null
+    usage.value = null
+    modelNo.value = null
+    equipmentValue.value = null
+    status.value = null
 }
 
 onMounted(() => {
     fetchUsers();
+    fetchEquipment();
+    //fetch roles
+    //fetch subscriptions
 });
 
 
@@ -165,6 +190,10 @@ onMounted(() => {
                                         <th class="text-left"> Name </th>
                                         <th class="text-left"> Email </th>
                                         <th class="text-left"> Phone </th>
+                                        <th class="text-left"> Date of Birth </th>
+                                        <th class="text-left"> Gender </th>
+                                        <th class="text-left"> Role </th>
+                                        <th class="text-left"> Gym Location </th>
                                         <th class="text-center" colspan="3"> Action </th>
                                     </tr>
                                 </thead>
@@ -173,6 +202,10 @@ onMounted(() => {
                                         <td>{{ item.name }}</td>
                                         <td>{{ item.email }}</td>
                                         <td>{{ item.phoneNumber }}</td>
+                                        <td>{{ item.dob }}</td>
+                                        <td>{{ item.gender }}</td>
+                                        <td>{{ item.role }}</td>
+                                        <td>{{ item.gymLocation }}</td>
                                         <td v-if="item.deleted_at == null">
                                             <v-btn color="success" size="small" @click="changeRole(item)"><v-icon icon="mdi-pencil" ></v-icon> Change Role</v-btn>
                                         </td>
@@ -235,7 +268,7 @@ onMounted(() => {
                     </div>
                 </v-tabs-window-item>
                 <!-- Equipment -->
-                 <v-tabs-window-item :value="2">
+                 <v-tabs-window-item :value="3">
                     <div v-if="equipment==null ||equipment==undefined || Object.keys(equipment).length == 0" align="center">
                         <v-row>
                             <v-col cols="12" md="6" sm="12" >
@@ -248,6 +281,11 @@ onMounted(() => {
                     </div>
                     <div v-else>
                         <v-container>
+                            <v-row>
+                                <v-col cols="12" md="12" sm="12" align="right">
+                                    <v-btn class="ma-2" color="blue-darken-2" icon="mdi-plus" @click="showAddEquipmentDialog = true"></v-btn>
+                                </v-col>
+                            </v-row>
                              <v-row>
                                 <v-col>
                                     <v-table class="border">
@@ -400,6 +438,49 @@ onMounted(() => {
                             <v-spacer></v-spacer>
                             <v-btn text="Close" variant="plain" @click="close()" ></v-btn>
                             <v-btn color="primary" type="submit" text="Update" variant="tonal" @click="updateUser()" ></v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-form>
+            </v-dialog>
+            <!-- Add Equipment Dialog -->
+            <v-dialog v-model="showAddEquipmentDialog" max-width="600">
+                <v-form @submit.prevent >
+                    <v-card>
+                        <v-card-title class="pa-6">
+                        <v-row>
+                                Add Equipment
+                                <v-spacer></v-spacer>
+                                <v-btn class="ma-2" color="blue-darken-2" icon="mdi-close" @click="close();"></v-btn>
+                            </v-row>
+                        </v-card-title>
+                        <v-card-text>
+                            <v-row>
+                                <v-col md="6">
+                                    <v-text-field label="Name" v-model="equipmentName" required :rules="[rules.required]"></v-text-field>
+                                </v-col>
+                                <v-col md="6">
+                                    <v-text-field label="Usage" v-model="usage" required :rules="[rules.required]"></v-text-field>
+                                </v-col>
+                            </v-row>
+                           
+                             <v-row>
+                                <v-col md="6">
+                                    <v-text-field label="Model Number" v-model="modelNo" required :rules="[rules.required]"></v-text-field>
+                                </v-col>
+                                <v-col md="6">
+                                    <v-text-field label="Value" v-model="equipmentValue" required :rules="[rules.required]"></v-text-field>
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col md="6">
+                                    <v-text-field label="Status" v-model="status" required :rules="[rules.required]"></v-text-field>
+                                </v-col>
+                            </v-row>
+                        </v-card-text>
+                        <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn text="Close" variant="plain" @click="close()" ></v-btn>
+                            <v-btn color="primary"  text="Save" variant="tonal" @click="addEquipment()" ></v-btn>
                         </v-card-actions>
                     </v-card>
                 </v-form>
