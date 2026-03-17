@@ -5,7 +5,6 @@ import {useAuth} from '../services/auth'
 
 const router = useRouter();
 
-
 const { login, loading, error } = useAuth()
 
   const rules = {

@@ -1,8 +1,6 @@
 <script setup>
     const userDetails = JSON.parse(localStorage.getItem('user'))
-    // import api  from '../services/api';
-    // const user = await api.post('login', credentials)
-
+    
 </script>
 
 <template>
