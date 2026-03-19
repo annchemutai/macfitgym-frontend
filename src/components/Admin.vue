@@ -28,6 +28,7 @@ const dob =ref(null)
 const gymLocation =ref(null)
 const users = ref(null)
 const userRole = ref(null)
+const userIdNo = ref(null)
 
 //fetch data
 async function fetchUsers(){
@@ -67,6 +68,44 @@ async function addUser(){
         })
    } catch (err) {
       error.value = err.response?.data?.message || 'Creating user failed'
+      throw err
+   } 
+}
+
+//edit user
+function editUser(data){
+    userIdNo.value = data.id
+    fullName.value = data.name
+    userRole.value = data.role_id
+    email.value = data.email
+    phoneNumber.value = data.phoneNumber
+    dob.value = data.dob
+    gymLocation.value = data.gymLocation
+    gender.value = data.gender
+    showEditUserDialog.value = true
+}
+
+async function updateUser(){
+    const formData = new FormData()
+    formData.append('name', fullName.value)
+    formData.append("email", email.value);
+    formData.append("phoneNumber", phoneNumber.value);
+    formData.append("dob", dob.value);
+    formData.append("gender", gender.value);
+    formData.append("gymLocation", gymLocation.value);
+    formData.append("role_id", userRole.value);
+
+   try {
+      await api.put('users/' + userIdNo.value, formData,
+         { headers: { 'Authorization': `Bearer ${token}` } })
+         .then(function (response) {
+            error.value = ''
+            loading.value = false
+            close()
+            fetchUsers();
+        })
+   } catch (err) {
+      error.value = err.response?.data?.message || 'Creating screening data failed'
       throw err
    } 
 }
@@ -405,32 +444,49 @@ onMounted(() => {
                         <v-card-text>
                             <v-row dense>
                                 <v-col >
-                                    <v-text-field label="Name" v-model="firstName" required :rules="[rules.required]"></v-text-field>
+                                    <v-text-field label="Name" v-model="fullName" required :rules="[rules.required]"></v-text-field>
                                 </v-col>
                             </v-row>
-                            <v-row dense>
+                            
+                             <v-row>
+                                <v-col md="6">
+                                    <v-text-field label="Email" v-model="email" required :rules="[rules.required]"></v-text-field>
+                                </v-col>
+                                <v-col md="6">
+                                    <v-text-field label="Phone Number" v-model="phoneNumber" required :rules="[rules.required]"></v-text-field>
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col md="6">
+                                    <v-select
+                                        label="Gym Location"
+                                        :items="['CBD', 'Madaraka', 'Westlands', 'Buruburu']"
+                                        variant="outlined"
+                                        v-model="gymLocation"
+                                        ></v-select>
+                                </v-col>
+                                <v-col md="6">
+                                    <v-date-input label="Date of Birth" v-model="dob" required :rules="[rules.required]"></v-date-input>
+                                </v-col>
+                            </v-row>
+                            <v-row>
                                 <v-col cols="12" md="2" sm="6" > Role: </v-col>
                                 <v-col cols="12" md="10" sm="6">
-                                    <v-radio-group v-model="userRole" :rules="[rules.required]">
-                                        <v-row>
-                                            <v-col cols="12" md="6" sm="6" >
-                                                <v-radio label="Admin" value="2"></v-radio>
-                                            </v-col>
-                                            <v-col cols="12" md="6" sm="6" >
-                                                <v-radio label="Healthcare Provider" value="3"></v-radio>
-                                            </v-col>
-                                        </v-row>
+                                    <v-radio-group v-model="userRole" :rules="[rules.required]" inline>
+                                        <v-radio label="Admin" value="1"></v-radio>
+                                        <v-radio label="Trainer" value="2"></v-radio>
+                                        <v-radio label="Staff" value="3"></v-radio>
+                                        <v-radio label="User" value="4"></v-radio>
                                     </v-radio-group>
                                 </v-col>
                             </v-row>
-                             <v-row dense>
-                                <v-col >
-                                    <v-text-field label="Email" v-model="email" required :rules="[rules.required]"></v-text-field>
-                                </v-col>
-                            </v-row>
-                             <v-row dense>
-                                <v-col >
-                                    <v-text-field label="Phone" v-model="phoneNumber" required :rules="[rules.required]"></v-text-field>
+                            <v-row>
+                                <v-col cols="12" md="2" sm="6" > Gender: </v-col>
+                                <v-col cols="12" md="10" sm="6">
+                                    <v-radio-group v-model="gender" :rules="[rules.required]" inline>
+                                        <v-radio label="Male" value="Male"></v-radio>
+                                        <v-radio label="Female" value="Female"></v-radio>
+                                    </v-radio-group>
                                 </v-col>
                             </v-row>
                         </v-card-text>
